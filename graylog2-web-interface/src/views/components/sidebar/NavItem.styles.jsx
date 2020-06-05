@@ -46,7 +46,7 @@ export const TitleIcon: StyledComponent<{}, {}, HTMLDivElement> = styled.div`
   cursor: pointer;
 `;
 
-export const Content: StyledComponent<StyleProps, ThemeInterface, HTMLDivElement> = styled.div(({ isSelected, expandRight, theme }) => css`
+export const Content: StyledComponent<StyleProps, ThemeInterface, HTMLDivElement> = styled.div(({ isSelected, expandRight, theme, sidebarIsPinned }) => css`
   color: ${theme.utils.readableColor(theme.color.global.contentBackground)};
   background: ${theme.color.global.contentBackground};
   box-shadow:
@@ -59,12 +59,12 @@ export const Content: StyledComponent<StyleProps, ThemeInterface, HTMLDivElement
   `)}
   ${(isSelected && expandRight) && css`
     position: absolute !important;
-    top: 0;
-    left: 100%;
+    top: ${sidebarIsPinned ? '50px' : 0};
+    left: ${sidebarIsPinned ? '50px' : '100%'};
     border: 0;
     bottom: 0;
     padding: 20px;
-    width: 450px;
+    width: 270px;
     overflow-y: hidden;
   `}
 `);
