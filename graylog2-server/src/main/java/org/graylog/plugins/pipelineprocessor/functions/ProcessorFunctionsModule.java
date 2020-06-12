@@ -85,6 +85,7 @@ import org.graylog.plugins.pipelineprocessor.functions.lookup.LookupSetValue;
 import org.graylog.plugins.pipelineprocessor.functions.lookup.LookupStringList;
 import org.graylog.plugins.pipelineprocessor.functions.lookup.LookupSetStringList;
 import org.graylog.plugins.pipelineprocessor.functions.lookup.LookupValue;
+import org.graylog.plugins.pipelineprocessor.functions.map.MapClearKey;
 import org.graylog.plugins.pipelineprocessor.functions.messages.CloneMessage;
 import org.graylog.plugins.pipelineprocessor.functions.messages.CreateMessage;
 import org.graylog.plugins.pipelineprocessor.functions.messages.DropMessage;
@@ -267,7 +268,7 @@ public class ProcessorFunctionsModule extends PluginModule {
         addMessageProcessorFunction(LookupSetStringList.NAME, LookupSetStringList.class);
         addMessageProcessorFunction(LookupAddStringList.NAME, LookupAddStringList.class);
         addMessageProcessorFunction(LookupRemoveStringList.NAME, LookupRemoveStringList.class);
-
+        addMessageProcessorFunction(MapClearKey.NAME, MapClearKey.class);
         // Debug
         addMessageProcessorFunction(Debug.NAME, Debug.class);
         addMessageProcessorFunction(MetricCounterIncrement.NAME, MetricCounterIncrement.class);
@@ -278,7 +279,8 @@ public class ProcessorFunctionsModule extends PluginModule {
     }
 
     public static MapBinder<String, Function<?>> processorFunctionBinder(Binder binder) {
-        return MapBinder.newMapBinder(binder, TypeLiteral.get(String.class), new TypeLiteral<Function<?>>() {});
+        return MapBinder.newMapBinder(binder, TypeLiteral.get(String.class), new TypeLiteral<Function<?>>() {
+        });
     }
 
     public static void addMessageProcessorFunction(Binder binder, String name, Class<? extends Function<?>> functionClass) {

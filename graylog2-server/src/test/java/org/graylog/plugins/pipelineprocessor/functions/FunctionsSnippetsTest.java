@@ -89,6 +89,7 @@ import org.graylog.plugins.pipelineprocessor.functions.lookup.LookupClearKey;
 import org.graylog.plugins.pipelineprocessor.functions.lookup.LookupRemoveStringList;
 import org.graylog.plugins.pipelineprocessor.functions.lookup.LookupSetStringList;
 import org.graylog.plugins.pipelineprocessor.functions.lookup.LookupSetValue;
+import org.graylog.plugins.pipelineprocessor.functions.map.MapClearKey;
 import org.graylog.plugins.pipelineprocessor.functions.messages.CloneMessage;
 import org.graylog.plugins.pipelineprocessor.functions.messages.CreateMessage;
 import org.graylog.plugins.pipelineprocessor.functions.messages.DropMessage;
@@ -144,6 +145,8 @@ import org.graylog2.plugin.streams.Stream;
 import org.graylog2.shared.SuppressForbidden;
 import org.graylog2.shared.bindings.providers.ObjectMapperProvider;
 import org.graylog2.streams.StreamService;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeUtils;
 import org.joda.time.Duration;
@@ -335,6 +338,8 @@ public class FunctionsSnippetsTest extends BaseParserTest {
         functions.put(IsJson.NAME, new IsJson());
         functions.put(IsUrl.NAME, new IsUrl());
 
+        functions.put(MapClearKey.NAME, new MapClearKey());
+
         final GrokPatternService grokPatternService = mock(GrokPatternService.class);
         final GrokPattern greedyPattern = GrokPattern.create("GREEDY", ".*");
         Set<GrokPattern> patterns = Sets.newHashSet(
@@ -349,8 +354,8 @@ public class FunctionsSnippetsTest extends BaseParserTest {
         when(grokPatternService.loadByName("GREEDY")).thenReturn(Optional.of(greedyPattern));
         final EventBus clusterBus = new EventBus();
         final GrokPatternRegistry grokPatternRegistry = new GrokPatternRegistry(clusterBus,
-                                                                                grokPatternService,
-                                                                                Executors.newScheduledThreadPool(1));
+                grokPatternService,
+                Executors.newScheduledThreadPool(1));
         functions.put(GrokMatch.NAME, new GrokMatch(grokPatternRegistry));
         functions.put(GrokExists.NAME, new GrokExists(grokPatternRegistry));
 
@@ -366,7 +371,7 @@ public class FunctionsSnippetsTest extends BaseParserTest {
     }
 
     @Test
-    public void stringConcat(){
+    public void stringConcat() {
         final Rule rule = parser.parseRule(ruleForTest(), false);
         final Message message = evaluateRule(rule, new Message("Dummy Message", "test", Tools.nowUTC()));
 
@@ -421,6 +426,21 @@ public class FunctionsSnippetsTest extends BaseParserTest {
         assertThat(message.getField("author_first")).isEqualTo("Nigel Rees");
         assertThat(message.hasField("author_last")).isTrue();
         assertThat(message.hasField("this_should_exist")).isTrue();
+    }
+
+    @Test
+    public void map_clear_key() {
+        final Map<String, Object> testMap = Collections.emptyMap();
+        testMap.put("foo", "foo");
+        testMap.put("deleteMe", "bar");
+        testMap.put("complex", Collections.emptyMap());
+
+        final Rule rule = parser.parseRule(ruleForTest(), false);
+        final Message message = evaluateRule(rule);
+        message.addFields(testMap);
+        assertThat(message.hasField("foo")).isTrue();
+        assertThat(message.hasField("deleteMe")).isFalse();
+        assertThat(message.hasField("complex")).isTrue();
     }
 
     @Test
@@ -591,6 +611,7 @@ public class FunctionsSnippetsTest extends BaseParserTest {
         assertThat(message.getField("chars_ascii")).isEqualTo(5L);
         assertThat(message.getField("bytes_ascii")).isEqualTo(5L);
     }
+
 
     @Test
     public void split() {
@@ -979,7 +1000,7 @@ public class FunctionsSnippetsTest extends BaseParserTest {
             assertThat(message).isNotNull();
             assertThat(message.getField("interval"))
                     .isInstanceOf(Duration.class)
-                    .matches(o -> ((Duration)o).isEqual(Duration.standardDays(1)), "Exactly one day difference");
+                    .matches(o -> ((Duration) o).isEqual(Duration.standardDays(1)), "Exactly one day difference");
             assertThat(message.getField("years")).isEqualTo(Period.years(2));
             assertThat(message.getField("months")).isEqualTo(Period.months(2));
             assertThat(message.getField("weeks")).isEqualTo(Period.weeks(2));
